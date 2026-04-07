@@ -1,9 +1,10 @@
 import os
-from flask import Flask, Blueprint
+from flask import Flask, Blueprint, jsonify
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from flasgger import Swagger
+from app.modelos.Misiones_model import Misiones
 
 Base = automap_base()
 
@@ -29,6 +30,38 @@ def hello_world():
     return 'Hello World!'
 
 
+# ── Blueprint de misiones ────────────────────────────────────────────────────
+
+misiones_bp = Blueprint('misiones', __name__, url_prefix='/misiones')
+
+@misiones_bp.route('/')
+def get_misiones():
+    """
+    Lista todas las misiones
+    ---
+    tags:
+      - misiones
+    responses:
+      200:
+        descripcion: Lista de misiones
+    """
+    session = misiones_bp.Session()
+    try:
+        misiones = session.query(Misiones).all()
+        result = [
+            {
+                'user_id':           m.id,
+                'mision_type':  m.mision_type,
+                'status':       m.status,
+                'resolution':   m.resolution,
+            }
+            for m in misiones
+        ]
+        return jsonify(result)
+    finally:
+        session.close()
+
+
 # ── App factory ──────────────────────────────────────────────────────────────
 
 def create_app():
@@ -52,6 +85,7 @@ def create_app():
     app.Session = Session
 
     app.register_blueprint(prueba_bp)
+    app.register_blueprint(misiones_bp)
 
     return app
 
