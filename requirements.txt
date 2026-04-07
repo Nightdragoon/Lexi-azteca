@@ -1,5 +1,6 @@
 flask
 requests
 sqlalchemy
+psycopg2
 python-dotenv
 flasgger
