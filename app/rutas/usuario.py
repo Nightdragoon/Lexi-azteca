@@ -17,6 +17,58 @@ Base = automap_base()
 Base.prepare(engine, reflect=True)
 
 
+@usuario_bp.route("/login", methods=["POST"])
+def login():
+    """
+    Login de usuario
+    ---
+    tags:
+      - usuario
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - user_name
+            - password
+          properties:
+            user_name:
+              type: string
+              example: "carlos_mx"
+            password:
+              type: string
+              example: "password123"
+    responses:
+      200:
+        description: Login exitoso
+      401:
+        description: Usuario o contraseña incorrectos
+    """
+    session = current_app.Session()
+    try:
+        data = request.get_json()
+        user_name = data.get('user_name')
+        password = data.get('password')
+
+        if not user_name or not password:
+            return jsonify({"error": "user_name y password son requeridos"}), 400
+
+        Usuario = Base.classes.usuarios
+        u = session.query(Usuario).filter_by(user_name=user_name, password=password).first()
+
+        if u is None:
+            return jsonify({"error": "Usuario o contraseña incorrectos"}), 401
+
+        result = {col.key: getattr(u, col.key) for col in Usuario.__table__.columns if col.key != 'password'}
+        return jsonify({"message": "Login exitoso", "usuario": result}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+    finally:
+        session.close()
+
+
 @usuario_bp.route("/", methods=["POST"])
 def create_usuario():
     """
