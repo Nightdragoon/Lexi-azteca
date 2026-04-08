@@ -5,7 +5,6 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from app.rutas.Ia import ia_bp
 from app.rutas.usuario import usuario_bp
-from app.rutas.whatsapp import wa_bp
 from app.rutas.missiones import ms_bl
 from app.rutas.telegram import tg_bp
 from flasgger import Swagger
@@ -62,6 +61,7 @@ def create_app():
     app.register_blueprint(prueba_bp)
     app.register_blueprint(ia_bp)
     app.register_blueprint(usuario_bp)
+    app.register_blueprint(ms_bl)
     app.register_blueprint(tg_bp)
 
     return app
