@@ -6,3 +6,5 @@ flasgger
 pydantic
 psycopg2
 flask-cors
+openai
+elevenlabs

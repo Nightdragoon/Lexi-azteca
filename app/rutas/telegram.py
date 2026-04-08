@@ -1,6 +1,9 @@
 from flask import Blueprint, request, jsonify
 from app.Handlers.TelegramHandler import TelegramHandler
 from app.Handlers.AIHandler import AIHandler
+from app.Handlers.WhisperHandler import WhisperHandler
+from app.Handlers.HumeHandler import HumeHandler
+from app.Handlers.ElevenLabsHandler import ElevenLabsHandler
 from app.Helpers.UsuarioHelper import UsuarioHelper
 import random
 
@@ -31,10 +34,11 @@ def receive_webhook():
         chat_id = message['chat']['id']
         msg_type = 'text' if 'text' in message else None
 
+        tg = TelegramHandler()
+        telegram_username = message.get('from', {}).get('username')
+
         if msg_type == 'text':
             text = message['text'].strip().lower()
-            tg = TelegramHandler()
-            telegram_username = message.get('from', {}).get('username')
 
             if text == 'quiero registrarme':
                 if not telegram_username:
@@ -52,6 +56,51 @@ def receive_webhook():
                 ai = AIHandler()
                 respuesta = ai.generate_response(text, user_context)
                 tg.send_message(chat_id, respuesta)
+
+        elif msg_type == 'voice':
+            file_id = message['voice']['file_id']
+            respuesta = None
+
+            try:
+                # 1. Descargar audio
+                audio_bytes = tg.get_voice_bytes(file_id)
+
+                # 2. Transcribir con Whisper
+                whisper = WhisperHandler()
+                texto_transcrito = whisper.transcribe(audio_bytes)
+                print(f"TRANSCRIPCIÓN: {texto_transcrito}")
+
+                # 3. Analizar emociones con Hume
+                hume = HumeHandler()
+                emociones = hume.analyze_audio(audio_bytes)
+                print(f"EMOCIONES: {emociones}")
+
+                # 4. Obtener contexto del usuario
+                helper = UsuarioHelper()
+                user_context = helper.get_by_username(telegram_username) if telegram_username else {}
+                if not user_context:
+                    user_context = {}
+
+                # Agregar emociones al contexto
+                if emociones:
+                    user_context['emociones_detectadas'] = ", ".join(f"{k}: {v}" for k, v in emociones.items())
+
+                # 5. Generar respuesta con DeepSeek
+                ai = AIHandler()
+                respuesta = ai.generate_response(texto_transcrito, user_context)
+
+                # 6. Convertir respuesta a voz con ElevenLabs
+                eleven = ElevenLabsHandler()
+                audio_respuesta = eleven.text_to_speech(respuesta)
+
+                # 7. Enviar audio de vuelta
+                tg.send_voice(chat_id, audio_respuesta)
+
+            except Exception as voice_error:
+                print(f"VOICE PIPELINE ERROR: {voice_error}")
+                # Fallback: responder en texto
+                fallback = respuesta if respuesta else "Lo siento, no pude procesar tu mensaje de voz. Intenta escribirlo."
+                tg.send_message(chat_id, fallback)
 
         return jsonify({"status": "ok"}), 200
 

@@ -42,3 +42,22 @@ class TelegramHandler:
         if response.status_code == 200:
             return response.json()
         raise Exception(f"Error Telegram API: {response.status_code} - {response.text}")
+
+    def get_voice_bytes(self, file_id: str) -> bytes:
+        """Descarga el archivo de voz de Telegram y devuelve los bytes"""
+        response = requests.get(f"{self.base_url}/getFile", params={"file_id": file_id})
+        if response.status_code != 200:
+            raise Exception(f"Error getFile: {response.status_code} - {response.text}")
+        file_path = response.json()["result"]["file_path"]
+        file_url = f"https://api.telegram.org/file/bot{self.token}/{file_path}"
+        audio = requests.get(file_url)
+        return audio.content
+
+    def send_voice(self, chat_id: int, audio_bytes: bytes):
+        """Envía un mensaje de voz a un chat de Telegram"""
+        files = {"voice": ("voice.ogg", audio_bytes, "audio/ogg")}
+        data = {"chat_id": chat_id}
+        response = requests.post(f"{self.base_url}/sendVoice", data=data, files=files)
+        if response.status_code == 200:
+            return response.json()
+        raise Exception(f"Error sendVoice: {response.status_code} - {response.text}")
