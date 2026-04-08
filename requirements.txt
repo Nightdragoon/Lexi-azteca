@@ -6,5 +6,6 @@ flasgger
 pydantic
 psycopg2
 flask-cors
+apscheduler
 openai
 elevenlabs

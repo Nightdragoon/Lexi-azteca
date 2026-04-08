@@ -7,10 +7,15 @@ from flasgger import Swagger
 from app.rutas.Ia import ia_bp
 from app.rutas.prueba import prueba_bp
 from app.rutas.usuario import usuario_bp
+from app.rutas.whatsapp import wa_bp
+from app.rutas.ranking import rk_bp
+from app.rutas.missiones import ms_bl
+from app.rutas.simulador import sim_bl
 from app.rutas.telegram import tg_bp
 
 from flask_cors import CORS
-
+from app.scheduler import init_scheduler
+from app.seed import seed_usuarios
 Base = automap_base()
 
 
@@ -37,6 +42,12 @@ def create_app():
     app.register_blueprint(prueba_bp)
     app.register_blueprint(ia_bp)
     app.register_blueprint(usuario_bp)
+    app.register_blueprint(wa_bp)
+    app.register_blueprint(rk_bp)
+    app.register_blueprint(ms_bl)
+    app.register_blueprint(sim_bl)
+    seed_usuarios(engine)
+    init_scheduler(Session)
     
     app.register_blueprint(tg_bp)
 
