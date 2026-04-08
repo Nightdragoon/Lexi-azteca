@@ -5,7 +5,6 @@ from app.Handlers.WhisperHandler import WhisperHandler
 from app.Handlers.HumeHandler import HumeHandler
 from app.Handlers.ElevenLabsHandler import ElevenLabsHandler
 from app.Helpers.UsuarioHelper import UsuarioHelper
-import random
 
 tg_bp = Blueprint('telegram', __name__, url_prefix='/telegram')
 
@@ -42,25 +41,18 @@ def receive_webhook():
         tg = TelegramHandler()
         telegram_username = message.get('from', {}).get('username')
 
+        # Verificar que el usuario esté registrado
+        helper = UsuarioHelper()
+        if not telegram_username or not helper.username_exists(telegram_username):
+            tg.send_message(chat_id, "No estás registrado. Necesitas una cuenta para usar Lexi Azteca.")
+            return jsonify({"status": "ok"}), 200
+
         if msg_type == 'text':
             text = message['text'].strip().lower()
-
-            if text == 'quiero registrarme':
-                if not telegram_username:
-                    tg.send_message(chat_id, "Necesitas tener un username de Telegram configurado para registrarte.")
-                else:
-                    helper = UsuarioHelper()
-                    if helper.username_exists(telegram_username):
-                        tg.send_message(chat_id, "Tu usuario ya está registrado en la base de datos")
-                    else:
-                        codigo = random.randint(100000, 999999)
-                        tg.send_message(chat_id, f"Tu código de registro es: {codigo}")
-            else:
-                helper = UsuarioHelper()
-                user_context = helper.get_by_username(telegram_username) if telegram_username else None
-                ai = AIHandler()
-                respuesta = ai.generate_response(text, user_context)
-                tg.send_message(chat_id, respuesta)
+            user_context = helper.get_by_username(telegram_username)
+            ai = AIHandler()
+            respuesta = ai.generate_response(text, user_context)
+            tg.send_message(chat_id, respuesta)
 
         elif msg_type == 'voice':
             file_id = message['voice']['file_id']
@@ -85,10 +77,7 @@ def receive_webhook():
                     print(f"HUME ERROR (continuando sin emociones): {hume_error}")
 
                 # 4. Obtener contexto del usuario
-                helper = UsuarioHelper()
-                user_context = helper.get_by_username(telegram_username) if telegram_username else {}
-                if not user_context:
-                    user_context = {}
+                user_context = helper.get_by_username(telegram_username) or {}
 
                 # Agregar emociones al contexto si las hay
                 if emociones:
