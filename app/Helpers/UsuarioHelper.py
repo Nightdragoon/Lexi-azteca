@@ -35,3 +35,23 @@ class UsuarioHelper:
             return {col.key: getattr(u, col.key) for col in Usuario.__table__.columns if col.key != 'password'}
         finally:
             session.close()
+
+    def username_exists(self, user_name: str) -> bool:
+        session = Session()
+        try:
+            Usuario = Base.classes.usuarios
+            u = session.query(Usuario).filter_by(user_name=user_name).first()
+            return u is not None
+        finally:
+            session.close()
+
+    def get_by_username(self, user_name: str) -> dict | None:
+        session = Session()
+        try:
+            Usuario = Base.classes.usuarios
+            u = session.query(Usuario).filter_by(user_name=user_name).first()
+            if u is None:
+                return None
+            return {col.key: getattr(u, col.key) for col in Usuario.__table__.columns if col.key != 'password'}
+        finally:
+            session.close()

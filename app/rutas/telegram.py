@@ -34,19 +34,21 @@ def receive_webhook():
         if msg_type == 'text':
             text = message['text'].strip().lower()
             tg = TelegramHandler()
+            telegram_username = message.get('from', {}).get('username')
 
             if text == 'quiero registrarme':
-                # En Telegram no hay teléfono automático, se usa el chat_id como identificador
-                helper = UsuarioHelper()
-                phone = str(chat_id)
-                if helper.phone_exists(phone):
-                    tg.send_message(chat_id, "Tu cuenta ya está registrada en la base de datos")
+                if not telegram_username:
+                    tg.send_message(chat_id, "Necesitas tener un username de Telegram configurado para registrarte.")
                 else:
-                    codigo = random.randint(100000, 999999)
-                    tg.send_message(chat_id, f"Tu código de registro es: {codigo}")
+                    helper = UsuarioHelper()
+                    if helper.username_exists(telegram_username):
+                        tg.send_message(chat_id, "Tu usuario ya está registrado en la base de datos")
+                    else:
+                        codigo = random.randint(100000, 999999)
+                        tg.send_message(chat_id, f"Tu código de registro es: {codigo}")
             else:
                 helper = UsuarioHelper()
-                user_context = helper.get_by_phone(str(chat_id))
+                user_context = helper.get_by_username(telegram_username) if telegram_username else None
                 ai = AIHandler()
                 respuesta = ai.generate_response(text, user_context)
                 tg.send_message(chat_id, respuesta)
