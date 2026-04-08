@@ -50,3 +50,5 @@ def create_app():
     app.register_blueprint(tg_bp)
 
     return app
+
+app = create_app()
