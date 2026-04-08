@@ -7,13 +7,15 @@ from flasgger import Swagger
 from app.rutas.Ia import ia_bp
 from app.rutas.prueba import prueba_bp
 from app.rutas.usuario import usuario_bp
+from app.rutas.whatsapp import wa_bp
+from flask_cors import CORS
 
 Base = automap_base()
 
 
 def create_app():
     app = Flask(__name__)
-
+    CORS(app)
     Swagger(app, template={
         "info": {
             "title": "Lexi Azteca API",
@@ -34,5 +36,6 @@ def create_app():
     app.register_blueprint(prueba_bp)
     app.register_blueprint(ia_bp)
     app.register_blueprint(usuario_bp)
+    app.register_blueprint(wa_bp)
 
     return app

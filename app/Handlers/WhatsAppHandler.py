@@ -8,7 +8,7 @@ class WhatsAppHandler:
         load_dotenv()
         self.token = os.getenv('WHATSAPP_TOKEN')
         self.phone_number_id = os.getenv('WHATSAPP_PHONE_NUMBER_ID')
-        self.api_version = os.getenv('WHATSAPP_API_VERSION', 'v22.0')
+        self.api_version = os.getenv('WHATSAPP_API_VERSION', 'v23.0')
         self.base_url = f"https://graph.facebook.com/{self.api_version}/{self.phone_number_id}/messages"
 
     def _headers(self):
@@ -43,6 +43,7 @@ class WhatsAppHandler:
         """Envía un mensaje de texto libre a un número de WhatsApp"""
         payload = {
             "messaging_product": "whatsapp",
+            "recipient_type": "individual",
             "to": to,
             "type": "text",
             "text": {"body": message}
