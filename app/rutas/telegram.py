@@ -75,10 +75,14 @@ def receive_webhook():
                 texto_transcrito = whisper.transcribe(audio_bytes)
                 print(f"TRANSCRIPCIÓN: {texto_transcrito}")
 
-                # 3. Analizar emociones con Hume
-                hume = HumeHandler()
-                emociones = hume.analyze_audio(audio_bytes)
-                print(f"EMOCIONES: {emociones}")
+                # 3. Analizar emociones con Hume (opcional, no bloquea el flujo)
+                emociones = {}
+                try:
+                    hume = HumeHandler()
+                    emociones = hume.analyze_audio(audio_bytes)
+                    print(f"EMOCIONES: {emociones}")
+                except Exception as hume_error:
+                    print(f"HUME ERROR (continuando sin emociones): {hume_error}")
 
                 # 4. Obtener contexto del usuario
                 helper = UsuarioHelper()
@@ -86,7 +90,7 @@ def receive_webhook():
                 if not user_context:
                     user_context = {}
 
-                # Agregar emociones al contexto
+                # Agregar emociones al contexto si las hay
                 if emociones:
                     user_context['emociones_detectadas'] = ", ".join(f"{k}: {v}" for k, v in emociones.items())
 
