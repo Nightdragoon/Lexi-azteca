@@ -31,12 +31,12 @@ def login():
         schema:
           type: object
           required:
-            - user_name
+            - user_phone
             - password
           properties:
-            user_name:
+            user_phone:
               type: string
-              example: "carlos_mx"
+              example: "525619283816"
             password:
               type: string
               example: "password123"
@@ -49,14 +49,14 @@ def login():
     session = current_app.Session()
     try:
         data = request.get_json()
-        user_name = data.get('user_name')
+        user_phone = data.get('user_phone')
         password = data.get('password')
 
-        if not user_name or not password:
-            return jsonify({"error": "user_name y password son requeridos"}), 400
+        if not user_phone or not password:
+            return jsonify({"error": "user_phone y password son requeridos"}), 400
 
         Usuario = Base.classes.usuarios
-        u = session.query(Usuario).filter_by(user_name=user_name, password=password).first()
+        u = session.query(Usuario).filter_by(user_phone=user_phone, password=password).first()
 
         if u is None:
             return jsonify({"error": "Usuario o contraseña incorrectos"}), 401
