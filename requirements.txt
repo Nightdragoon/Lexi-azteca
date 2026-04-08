@@ -9,3 +9,4 @@ flask-cors
 apscheduler
 openai
 elevenlabs
+gunicorn
