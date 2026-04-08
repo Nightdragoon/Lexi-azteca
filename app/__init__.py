@@ -15,7 +15,7 @@ Base = automap_base()
 
 def create_app():
     app = Flask(__name__)
-    CORS(app)
+    CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
     Swagger(app, template={
         "info": {
             "title": "Lexi Azteca API",
