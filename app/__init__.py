@@ -8,6 +8,8 @@ from app.rutas.Ia import ia_bp
 from app.rutas.prueba import prueba_bp
 from app.rutas.usuario import usuario_bp
 from app.rutas.whatsapp import wa_bp
+from app.rutas.telegram import tg_bp
+
 from flask_cors import CORS
 
 Base = automap_base()
@@ -37,5 +39,6 @@ def create_app():
     app.register_blueprint(ia_bp)
     app.register_blueprint(usuario_bp)
     app.register_blueprint(wa_bp)
+    app.register_blueprint(tg_bp)
 
     return app
