@@ -32,7 +32,12 @@ def receive_webhook():
             return jsonify({"status": "ok"}), 200
 
         chat_id = message['chat']['id']
-        msg_type = 'text' if 'text' in message else None
+        if 'text' in message:
+            msg_type = 'text'
+        elif 'voice' in message:
+            msg_type = 'voice'
+        else:
+            msg_type = None
 
         tg = TelegramHandler()
         telegram_username = message.get('from', {}).get('username')
