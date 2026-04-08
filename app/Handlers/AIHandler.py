@@ -24,7 +24,7 @@ class AIHandler:
                 "content": f"Datos del usuario con el que estás hablando:\n{context_lines}"
             })
 
-        messages.append({"role": "user", "content": prompt})
+        messages.append({"role": "user", "content": prompt , "personalidad": "eres un asistente de finanzas llamado lexi azteca , estas dirigido a jovenes de entre 18 a 25 años , fuiste creado por el stem fesc "})
 
         data = {
             "model": self.model,
