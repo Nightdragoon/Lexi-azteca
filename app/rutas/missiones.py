@@ -1,23 +1,15 @@
 from flask import Blueprint, request, jsonify, current_app
-from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
 
 ms_bl = Blueprint('misiones', __name__, url_prefix='/misiones')
 
 
-DATABASE_URL = os.getenv('DATABASE_URL')
-
-engine = create_engine(DATABASE_URL)
-
-Base = automap_base()
-Base.prepare(engine, reflect=True)
+def get_missions_class():
+    Base = automap_base()
+    Base.prepare(current_app.engine, reflect=True)
+    return Base.classes.missiones
 
 
-#revisar si podemos hacer un hud
 @ms_bl.route('/', methods=['POST'])
 def agregar_misiones():
     """
@@ -33,7 +25,7 @@ def agregar_misiones():
           type: object
           required:
             - mission_name
-            - mission_type
+            - mision_type
             - description
             - status
             - xp_drop
@@ -41,22 +33,19 @@ def agregar_misiones():
             mission_name:
               type: string
               example: "Primera misión"
-            mission_type:
+            mision_type:
               type: string
-              example: "Primera misión"
+              enum: [pregunta, completar]
+              example: "pregunta"
             description:
               type: string
               example: "Completa el tutorial"
             status:
               type: string
-              enum: [pregunta, completar]
-              example: "pregunta"
+              example: "active"
             xp_drop:
               type: integer
               example: 100
-            status:
-              type: string
-              example: "active"
     responses:
       201:
         description: Misión creada
@@ -65,13 +54,17 @@ def agregar_misiones():
     """
     session = current_app.Session()
     try:
-        Missions = Base.classes.missiones
+        Missions = get_missions_class()
         data = request.get_json()
         data.pop('mission_id', None)
+        data.pop('created_at', None)
         nuevo = Missions(**data)
         session.add(nuevo)
         session.commit()
-        result = {col.key: getattr(nuevo, col.key) for col in Missions.__table__.columns}
+        result = {
+            col.key: str(getattr(nuevo, col.key)) if getattr(nuevo, col.key) is not None else None
+            for col in Missions.__table__.columns
+        }
         return jsonify(result), 201
     except Exception as e:
         session.rollback()
@@ -80,11 +73,4 @@ def agregar_misiones():
         session.close()
 
 
-    
-
-#agregar mision
-
 #lista de misiones
-
-
-
