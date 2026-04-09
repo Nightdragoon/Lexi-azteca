@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify, current_app
 from sqlalchemy.ext.automap import automap_base
-from app.simulador.misiones_logic import completar_mision
 
 ms_bl = Blueprint('misiones', __name__, url_prefix='/misiones')
 
@@ -244,45 +243,3 @@ def listar_misiones_activas(user_id):
     ]), 200
 
 
-@ms_bl.route('/completar', methods=['POST'])
-def completar_mision_endpoint():
-    """
-    Completar una misión aceptada
-    ---
-    tags:
-      - misiones
-    parameters:
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-          required:
-            - user_id
-            - acc_mission_id
-          properties:
-            user_id:
-              type: integer
-              example: 1
-            acc_mission_id:
-              type: integer
-              example: 1
-    responses:
-      200:
-        description: Misión completada y XP otorgado
-      400:
-        description: Condiciones no cumplidas o misión expirada
-      404:
-        description: Misión no encontrada
-    """
-    data = request.get_json()
-    resultado, error = completar_mision(
-        engine=current_app.engine,
-        user_id=data.get('user_id'),
-        acc_mission_id=data.get('acc_mission_id'),
-    )
-    if error == "Misión aceptada no encontrada":
-        return jsonify({"error": error}), 404
-    if error:
-        return jsonify({"error": error}), 400
-    return jsonify(resultado), 200

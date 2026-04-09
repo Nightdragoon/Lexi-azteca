@@ -1,6 +1,8 @@
 from sqlalchemy import MetaData, Table, select
 
 
+
+
 def iniciar_wallet(engine, user_id, max_range, low_range, monthly_balance):
     meta = MetaData()
     meta.reflect(bind=engine, only=['usuarios', 'wallet_state'])
@@ -45,3 +47,7 @@ def iniciar_wallet(engine, user_id, max_range, low_range, monthly_balance):
         conn.commit()
 
     return {k: str(v) if v is not None else None for k, v in row._mapping.items()}, None
+
+
+#historial de wallet
+
