@@ -44,7 +44,7 @@ def receive_webhook():
         # Verificar que el usuario esté registrado
         helper = UsuarioHelper()
         if not telegram_username or not helper.username_exists(telegram_username):
-            tg.send_message(chat_id, "No estás registrado. Necesitas una cuenta para usar Lexi Azteca.")
+            tg.send_message(chat_id, "No estás registrado. Necesitas una cuenta para usar Lexi Azteca. puedes obtenerla aqui https://lexi-azteca.com/login")
             return jsonify({"status": "ok"}), 200
 
         if msg_type == 'text':
