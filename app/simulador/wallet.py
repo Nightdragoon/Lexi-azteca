@@ -27,11 +27,14 @@ def iniciar_wallet(engine, user_id, max_range, low_range, monthly_balance):
         if wallet_existente:
             return None, "El usuario ya tiene un wallet activo"
 
-        # Calcular superávit y salud financiera
+        # Calcular superávit y salud financiera como porcentaje
         monthly_balance_num = float(monthly_balance)
         gastos_estimados = (float(max_range) + float(low_range)) / 2
         superavit = monthly_balance_num - gastos_estimados
-        financial_health = superavit > 0
+        if monthly_balance_num > 0:
+            financial_health = round(max(0, min(100, (superavit / monthly_balance_num) * 100)), 2)
+        else:
+            financial_health = 0
 
         resultado = conn.execute(
             wallet_table.insert().values(
