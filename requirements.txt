@@ -4,9 +4,10 @@ sqlalchemy
 python-dotenv
 flasgger
 pydantic
-psycopg2
+psycopg2-binary
 flask-cors
 apscheduler
 openai
 elevenlabs
-gunicorn
+
+python-dateutil

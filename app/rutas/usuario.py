@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import sessionmaker
 import os
+import secrets
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -47,6 +48,22 @@ def login():
     responses:
       200:
         description: Login exitoso
+        schema:
+          type: object
+          properties:
+            access_token:
+              type: string
+            user:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                user_name:
+                  type: string
+                user_phone:
+                  type: string
+      400:
+        description: Campos requeridos faltantes
       401:
         description: Usuario o contraseña incorrectos
     """
@@ -57,17 +74,29 @@ def login():
         password = data.get('password')
         user_name = data.get('user_name')
 
-        if not user_phone or not password or not user_name  :
-            return jsonify({"error": "user_phone, password y user_name son requeridos"}), 400
+        if not user_phone or not password:
+            return jsonify({"error": "user_phone y password son requeridos"}), 400
 
         Usuario = Base.classes.usuarios
-        u = session.query(Usuario).filter_by(user_phone=user_phone, password=password, user_name=user_name).first()
+        u = session.query(Usuario).filter_by(
+            user_phone=user_phone,
+            password=password,
+        ).first()
 
         if u is None:
-            return jsonify({"error": "Usuario , o telefono o contraseña incorrectos"}), 401
+            return jsonify({"error": "Usuario, teléfono o contraseña incorrectos"}), 401
 
-        result = {col.key: getattr(u, col.key) for col in Usuario.__table__.columns if col.key != 'password'}
-        return jsonify({"message": "Login exitoso", "usuario": result}), 200
+        user_data = {
+            col.key: getattr(u, col.key)
+            for col in Usuario.__table__.columns
+            if col.key != 'password'
+        }
+
+        return jsonify({
+            "access_token": secrets.token_hex(32),
+            "user": user_data,
+        }), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 400
     finally:
@@ -203,16 +232,12 @@ def update_usuario(user_id):
           properties:
             user_name:
               type: string
-              example: "carlos_mx"
             user_phone:
               type: string
-              example: "525619283816"
             onboarding:
               type: boolean
-              example: true
             password:
               type: string
-              example: "nueva_password"
     responses:
       200:
         description: Usuario actualizado
